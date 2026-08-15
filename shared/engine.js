@@ -1,12 +1,14 @@
 /**
  * Guardian Chess engine.
  *
- * A 10x8 chess variant. The back rank is  r n b g q k g b n r  — a Guardian (g)
- * flanks the king-and-queen pair on either side.
+ * A 10x8 chess variant. The back rank is  r n b g k q g b n r  — a Guardian (g)
+ * flanks the king-and-queen pair on either side. The king takes e and the queen
+ * f, the reverse of ordinary chess, so that each queen starts on her own colour.
  *
  * The Guardian moves EXACTLY two squares orthogonally (never one, never three,
  * never diagonally) and leaps over anything in between, like a knight.
- * In fairy-chess terms it is a "Dabbaba".
+ * In fairy-chess terms it is a "Dabbaba". An optional rule lets it also step one
+ * square, making it a Wazir-Dabbaba compound; see GUARDIAN_STEP_DELTAS.
  *
  * This module is pure ES and runs unchanged in the browser and in Node, so the
  * server can validate every move with the exact code the client used to make it.
@@ -50,6 +52,26 @@ const KING_DELTAS = [
 ];
 /** The whole point of the piece: exactly two, orthogonal only, leaping. */
 const GUARDIAN_DELTAS = [[-2, 0], [2, 0], [0, -2], [0, 2]];
+
+/**
+ * Optional rule: the Guardian may also step one square orthogonally.
+ *
+ * In fairy-chess terms this makes it a Wazir-Dabbaba compound rather than a
+ * plain Dabbaba, and it is the one change that lifts the piece's defining
+ * limitation. A Dabbaba never changes the parity of its rank or file, so it
+ * spends the game on a quarter of the board; add the single step and it can
+ * reach every square, defend pawns on their starting rank, and be blocked by
+ * nothing on the two-square leap it still owns.
+ *
+ * Off by default. It is stored on the position so it serialises with the game
+ * and both sides are always playing the same rules.
+ */
+const GUARDIAN_STEP_DELTAS = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+
+/** The Guardian's move set for a given position. */
+function guardianDeltas(wazir) {
+  return wazir ? [...GUARDIAN_DELTAS, ...GUARDIAN_STEP_DELTAS] : GUARDIAN_DELTAS;
+}
 
 const ROOK_DIRS = [[-1, 0], [1, 0], [0, -1], [0, 1]];
 const BISHOP_DIRS = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
@@ -118,8 +140,13 @@ export function initialBoard() {
   return board;
 }
 
-export function initialPosition() {
+/**
+ * A fresh position. `options.wazir` turns on the compound Guardian described
+ * above; leave it out for the standard game.
+ */
+export function initialPosition(options = {}) {
   return {
+    wazir: Boolean(options.wazir),
     board: initialBoard(),
     turn: WHITE,
     castling: { w: { k: true, q: true }, b: { k: true, q: true } },
@@ -136,6 +163,7 @@ function cloneBoard(board) {
 
 function clonePosition(pos) {
   return {
+    wazir: Boolean(pos.wazir),
     board: cloneBoard(pos.board),
     turn: pos.turn,
     castling: {
@@ -166,7 +194,7 @@ export function findKing(board, color) {
  * Is square (r,c) attacked by `by`? Used for check detection and for the
  * squares a castling king passes through.
  */
-export function isAttacked(board, r, c, by) {
+export function isAttacked(board, r, c, by, wazir = false) {
   // Pawns. White pawns capture toward row 0, so a white pawn attacking (r,c)
   // must be sitting one row below it.
   const pawnRow = by === WHITE ? r + 1 : r - 1;
@@ -186,7 +214,7 @@ export function isAttacked(board, r, c, by) {
   }
 
   // The Guardian leaps, so nothing in between can block it.
-  for (const [dr, dc] of GUARDIAN_DELTAS) {
+  for (const [dr, dc] of guardianDeltas(wazir)) {
     const p = pieceAt(board, r + dr, c + dc);
     if (p && p.c === by && p.t === GUARDIAN) return true;
   }
@@ -221,7 +249,7 @@ export function isAttacked(board, r, c, by) {
 export function inCheck(pos, color = pos.turn) {
   const k = findKing(pos.board, color);
   if (!k) return false;
-  return isAttacked(pos.board, k.r, k.c, opposite(color));
+  return isAttacked(pos.board, k.r, k.c, opposite(color), pos.wazir);
 }
 
 function addMove(list, move) {
@@ -295,8 +323,9 @@ export function pseudoLegalMoves(pos, color = pos.turn) {
         }
 
         case GUARDIAN: {
-          // Exactly two squares, orthogonal, leaping over whatever is between.
-          for (const [dr, dc] of GUARDIAN_DELTAS) {
+          // Exactly two squares, orthogonal, leaping over whatever is between —
+          // plus a single step when the compound rule is on.
+          for (const [dr, dc] of guardianDeltas(pos.wazir)) {
             const tr = r + dr;
             const tc = c + dc;
             if (!onBoard(tr, tc)) continue;
@@ -352,7 +381,7 @@ function addCastlingMoves(pos, color, moves) {
   const home = KING_HOME[color];
   const king = pos.board[home.r][home.c];
   if (!king || king.t !== KING || king.c !== color) return;
-  if (isAttacked(pos.board, home.r, home.c, opposite(color))) return;
+  if (isAttacked(pos.board, home.r, home.c, opposite(color), pos.wazir)) return;
 
   const row = home.r;
   // `between` must be empty; `pass` is every square the king touches after
@@ -367,7 +396,7 @@ function addCastlingMoves(pos, color, moves) {
     const rook = pos.board[row][s.rookCol];
     if (!rook || rook.t !== ROOK || rook.c !== color) continue;
     if (s.between.some((c) => pos.board[row][c])) continue;
-    if (s.pass.some((c) => isAttacked(pos.board, row, c, opposite(color)))) continue;
+    if (s.pass.some((c) => isAttacked(pos.board, row, c, opposite(color), pos.wazir))) continue;
     addMove(moves, {
       fr: row, fc: home.c, tr: row, tc: s.kingTo, promo: null,
       castle: s.side, rookFrom: s.rookCol, rookTo: s.rookTo,
@@ -456,7 +485,8 @@ export function positionKey(pos) {
   const cast =
     (pos.castling.w.k ? 'K' : '') + (pos.castling.w.q ? 'Q' : '') +
     (pos.castling.b.k ? 'k' : '') + (pos.castling.b.q ? 'q' : '');
-  return `${s} ${pos.turn} ${cast || '-'} ${pos.ep ? squareName(pos.ep.r, pos.ep.c) : '-'}`;
+  return `${s} ${pos.turn} ${cast || '-'} ${pos.ep ? squareName(pos.ep.r, pos.ep.c) : '-'}`
+    + (pos.wazir ? ' w' : '');
 }
 
 /**
@@ -565,14 +595,14 @@ export function findMove(pos, from, to, promo = null) {
  * Serialises to plain JSON so the server can ship it straight to clients.
  */
 export class Game {
-  constructor(state) {
+  constructor(state, options = {}) {
     if (state) {
       this.pos = state.pos;
       this.history = state.history;
       this.repetition = state.repetition;
       this.result = state.result;
     } else {
-      this.pos = initialPosition();
+      this.pos = initialPosition(options);
       this.history = [];
       this.repetition = { [positionKey(this.pos)]: 1 };
       this.result = null;
@@ -599,6 +629,11 @@ export class Game {
 
   get turn() {
     return this.pos.turn;
+  }
+
+  /** Is the compound-Guardian rule in force for this game? */
+  get wazir() {
+    return Boolean(this.pos.wazir);
   }
 
   get over() {

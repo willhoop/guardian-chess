@@ -149,9 +149,9 @@ app.post('/api/rooms', (req, res) => {
       : Math.random() < 0.5
         ? WHITE
         : BLACK;
-  const room = store.create({ hostColor });
+  const room = store.create({ hostColor, wazir: Boolean(req.body?.wazir) });
   room.touch();
-  res.json({ code: room.code, hostColor });
+  res.json({ code: room.code, hostColor, rules: room.rules });
 });
 
 app.get('/api/rooms/:code', (req, res) => {

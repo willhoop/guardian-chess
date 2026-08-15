@@ -233,7 +233,8 @@ function onServerMessage(msg) {
 
 async function createRoom() {
   const pick = document.querySelector('input[name="hostcolor"]:checked')?.value;
-  const body = pick === 'w' || pick === 'b' ? { color: pick } : {};
+  const body = { wazir: $('#opt-wazir').checked };
+  if (pick === 'w' || pick === 'b') body.color = pick;
   let data;
   try {
     const res = await fetch('/api/rooms', {
@@ -272,7 +273,7 @@ function enterLocal() {
   state.code = null;
   state.myColor = null;
   state.token = null;
-  state.game = new Game();
+  state.game = new Game(null, { wazir: $('#opt-wazir-local').checked });
   state.players = { w: { name: 'White', online: true }, b: { name: 'Black', online: true } };
   state.chat = [];
   state.drawOffer = null;
@@ -295,7 +296,7 @@ function enterBot(level) {
   state.token = null;
   state.myColor = 'w';
   state.thinking = false;
-  state.game = new Game();
+  state.game = new Game(null, { wazir: $('#opt-wazir-bot').checked });
   state.players = {
     w: { name: store.name || 'You', online: true },
     b: { name: `Computer (${LEVELS[state.botLevel].label})`, online: true },
@@ -511,11 +512,12 @@ function findKingSquare(board, color) {
 
 function renderRoomLine() {
   if (state.mode === 'local') {
-    el.roomLine.textContent = 'Local game · same screen';
+    el.roomLine.textContent = `Local game · same screen${rulesSuffix()}`;
     return;
   }
   if (state.mode === 'bot') {
-    el.roomLine.textContent = `Versus computer · ${LEVELS[state.botLevel].label}`;
+    el.roomLine.textContent =
+      `Versus computer · ${LEVELS[state.botLevel].label}${rulesSuffix()}`;
     return;
   }
   const conn = {
@@ -527,7 +529,13 @@ function renderRoomLine() {
   const seat = state.myColor
     ? `You are ${COLOR_NAMES[state.myColor]}`
     : 'Watching';
-  el.roomLine.textContent = `Game ${state.code} · ${seat} ${conn}`.trim();
+  el.roomLine.textContent =
+    `Game ${state.code} · ${seat}${rulesSuffix()} ${conn}`.trim();
+}
+
+/** Names any non-default rule, so nobody is surprised mid-game. */
+function rulesSuffix() {
+  return state.game.pos.wazir ? ' · stepping Guardians' : '';
 }
 
 function renderStatus() {

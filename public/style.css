@@ -226,6 +226,25 @@ p { margin: 0 0 .7em; }
 .pick input:checked + span { border-color: var(--gold); color: var(--gold); }
 .pick input:focus-visible + span { outline: 2px solid var(--gold-dim); outline-offset: 1px; }
 
+.opt {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: .8rem; color: var(--muted); cursor: pointer; line-height: 1.4;
+}
+.opt input {
+  appearance: none;
+  width: 16px; height: 16px; flex: none; margin-top: 1px;
+  border: 1px solid var(--line); border-radius: 3px;
+  background: var(--bg-deep); cursor: pointer;
+}
+.opt input:checked {
+  border-color: var(--gold); background: var(--gold);
+  /* A tick drawn with two borders, so there is no image to load. */
+  background-image: linear-gradient(45deg, transparent 45%, var(--bg-deep) 45%,
+                    var(--bg-deep) 55%, transparent 55%);
+}
+.opt input:checked + span { color: var(--gold); }
+.opt input:focus-visible { outline: 2px solid var(--gold-dim); outline-offset: 1px; }
+
 .code-input {
   text-transform: uppercase;
   letter-spacing: .28em;
@@ -267,7 +286,7 @@ p { margin: 0 0 .7em; }
 
 /* ── Game layout ──────────────────────────────────────────────────── */
 
-#game { padding: 18px; min-height: 100dvh; }
+#game { padding: 18px; min-height: 100dvh; overflow: hidden; }
 .game-grid {
   display: grid;
   gap: 20px;
@@ -276,7 +295,14 @@ p { margin: 0 0 .7em; }
   max-width: 1360px;
   margin: 0 auto;
 }
-.board-column { display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+.board-column {
+  display: flex; flex-direction: column; gap: 9px; min-width: 0;
+  /* 1.25 is 10/8, the board's aspect. The subtraction is the two player bars,
+     the file labels and the page padding that share the screen with it. */
+  max-width: calc((100dvh - 162px) * 1.25);
+  margin-inline: auto;
+  width: 100%;
+}
 
 .playerbar {
   display: flex; align-items: center; gap: 10px;
@@ -319,7 +345,9 @@ p { margin: 0 0 .7em; }
   border-radius: 8px;
   overflow: hidden;
   box-shadow: var(--shadow);
-  touch-action: manipulation;
+  /* `manipulation` still allows panning, so dragging a piece scrolled the page
+     instead of moving it. `none` gives every touch on the board to us. */
+  touch-action: none;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -723,6 +751,19 @@ p { margin: 0 0 .7em; }
 
 /* ── Narrow screens ───────────────────────────────────────────────── */
 
+/* Anything driven by a finger rather than a cursor gets a 44px target. */
+@media (pointer: coarse) {
+  .btn { min-height: 44px; }
+  .btn-small { min-height: 38px; }
+  .pick span { padding: .68em .2em; }
+  .iconbtn { width: 42px; height: 42px; }
+  .linkbtn { padding: 6px 0; }
+  .input { min-height: 44px; }
+  .tab, .lbtab, .authtab { padding: .7em .8em; }
+  /* Stop a drag near the edge from triggering pull-to-refresh. */
+  body { overscroll-behavior-y: contain; }
+}
+
 @media (max-width: 980px) {
   #game { padding: 10px; }
   .game-grid { grid-template-columns: minmax(0, 1fr); }
@@ -731,12 +772,38 @@ p { margin: 0 0 .7em; }
 }
 
 @media (max-width: 560px) {
-  .brand { gap: 12px; margin-bottom: 24px; }
-  .brand-mark { width: 46px; height: 46px; }
-  .board-frame { grid-template-columns: 14px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) 14px; }
-  .ranks, .files { font-size: .58rem; }
-  .playerbar { padding: 7px 10px; min-height: 42px; font-size: .92rem; }
+  #game { padding: 6px; }
+  /* Every pixel taken by the gutter is a pixel off ten squares. */
+  .board-frame {
+    grid-template-columns: 13px minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) 13px;
+    gap: 2px;
+  }
+  .ranks, .files { font-size: .6rem; }
+  .playerbar { padding: 7px 10px; min-height: 42px; font-size: .9rem; }
   .playerbar .captured svg { width: 16px; height: 16px; }
+  .playerbar .pmeta { display: none; }        /* the colour is obvious in context */
+  .side { padding: 12px; }
+  .modal { padding: 10px; }
+  .modal-card { padding: 18px 15px; }
+  .modal-wide, .modal-tall { max-height: 92dvh; }
+  .overlay-card { padding: 18px; max-width: 88%; }
+  .lb .wld { font-size: .82rem; }
+  /* The share link is long; let the code carry it on a small screen. */
+  .share-row { flex-wrap: wrap; }
+}
+
+/* Held sideways, a phone has width to spare and almost no height. Put the
+   sidebar alongside so every available pixel of height goes to the board. */
+@media (max-height: 560px) and (min-width: 680px) {
+  #game { padding: 8px; }
+  .game-grid { grid-template-columns: minmax(0, 1fr) 290px; gap: 12px; }
+  /* Reserve: two 34px bars, two 9px gaps, 16px padding, 15px label gutter. */
+  .board-column { max-width: calc((100dvh - 120px) * 1.25); }
+  .playerbar { min-height: 34px; padding: 4px 10px; font-size: .84rem; }
+  .playerbar .captured svg { width: 15px; height: 15px; }
+  .side { position: static; max-height: calc(100dvh - 16px); overflow-y: auto; }
+  .movelist, .chatlog, .scoreboard { max-height: 22vh; }
 }
 
 @media (prefers-reduced-motion: reduce) {

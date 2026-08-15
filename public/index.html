@@ -61,6 +61,10 @@
             <label><input type="radio" name="hostcolor" value="b"><span>Black</span></label>
             <label><input type="radio" name="hostcolor" value="r" checked><span>Random</span></label>
           </fieldset>
+          <label class="opt">
+            <input type="checkbox" id="opt-wazir">
+            <span>Guardians may also step one square</span>
+          </label>
           <button id="btn-create" class="btn btn-primary">Create game</button>
         </section>
 
@@ -83,6 +87,10 @@
             <label><input type="radio" name="botlevel" value="normal" checked><span>Normal</span></label>
             <label><input type="radio" name="botlevel" value="strong"><span>Strong</span></label>
           </fieldset>
+          <label class="opt">
+            <input type="checkbox" id="opt-wazir-bot">
+            <span>Guardians may also step one square</span>
+          </label>
           <button id="btn-bot" class="btn">Play computer</button>
         </section>
 
@@ -90,6 +98,10 @@
           <h2>Same screen</h2>
           <p>Pass the device back and forth. No code needed, and the board turns
              to face whoever is on move.</p>
+          <label class="opt">
+            <input type="checkbox" id="opt-wazir-local">
+            <span>Guardians may also step one square</span>
+          </label>
           <button id="btn-local" class="btn">Play locally</button>
         </section>
 
@@ -288,6 +300,17 @@
      <span class="mono">c4</span>, <span class="mono">g4</span>,
      <span class="mono">e2</span> or <span class="mono">e6</span> &mdash; and
      nothing can block it. The eight squares touching it are all out of reach.</p>
+
+  <h4>The optional single step</h4>
+  <p>When a game is created with <b>&ldquo;Guardians may also step one
+     square&rdquo;</b> switched on, each Guardian keeps its two-square leap and
+     gains a single orthogonal step as well. Fairy chess calls that a
+     Wazir-Dabbaba compound.</p>
+  <p>It is a bigger change than it sounds, because it removes the one limitation
+     that defines the plain piece: a stepping Guardian can reach
+     <em>every</em> square, defend pawns at home, and still leap. It is worth
+     roughly a bishop rather than slightly less than a knight. Whether the game
+     is better for it is exactly the question worth arguing about.</p>
 
   <h4>What that does to the game</h4>
   <ul>

@@ -23,7 +23,9 @@ export function makeToken() {
 export class Room {
   constructor(code, options = {}) {
     this.code = code;
-    this.game = new Game();
+    /** Optional rules chosen by whoever created the room. */
+    this.rules = { wazir: Boolean(options.wazir) };
+    this.game = new Game(null, this.rules);
     /** token -> {token, name, color} for the two seated players. */
     this.players = { [WHITE]: null, [BLACK]: null };
     this.chat = [];
@@ -112,7 +114,8 @@ export class Room {
     const b = this.players[BLACK];
     this.players[WHITE] = b ? { ...b, color: WHITE } : null;
     this.players[BLACK] = w ? { ...w, color: BLACK } : null;
-    this.game = new Game();
+    // A rematch keeps whatever rules the room was created with.
+    this.game = new Game(null, this.rules);
     this.drawOffer = null;
     this.rematchOffer = null;
     this.recorded = false;
@@ -151,6 +154,7 @@ export class Room {
       rematchOffer: this.rematchOffer,
       rated: this.isRated(),
       ratingChange: this.lastRatingChange,
+      rules: this.rules,
     };
   }
 }

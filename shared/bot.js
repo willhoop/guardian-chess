@@ -19,6 +19,9 @@ import { CENTIPAWN } from './values.js';
 /** Centipawn values, shared with the material scoreboard. */
 const VALUE = CENTIPAWN;
 
+/** What a Guardian is worth when the optional single step is switched on. */
+const COMPOUND_GUARDIAN = 400;
+
 const MATE = 1_000_000;
 
 /** Small nudge toward the middle of the 10x8 board. */
@@ -44,7 +47,9 @@ export function evaluate(pos) {
       const p = pos.board[r][c];
       if (!p) continue;
 
-      let v = VALUE[p.t];
+      // A compound Guardian reaches every square instead of a quarter of them,
+      // which is worth appreciably more than the plain piece.
+      let v = p.t === GUARDIAN && pos.wazir ? COMPOUND_GUARDIAN : VALUE[p.t];
       if (p.t === KNIGHT || p.t === BISHOP || p.t === QUEEN || p.t === GUARDIAN) {
         v += CENTRALITY[r][c];
       } else if (p.t === PAWN) {
