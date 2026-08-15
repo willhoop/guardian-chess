@@ -33,8 +33,8 @@
             <div id="my-rating" class="my-rating" hidden></div>
 
             <div id="guest-box" class="identity">
-              <input id="player-name" class="input namefield" placeholder="Your name"
-                     maxlength="24" autocomplete="off" aria-label="Your name">
+              <input id="player-name" class="input namefield" placeholder="Your username"
+                     maxlength="24" autocomplete="off" aria-label="Your username">
               <button id="btn-signin" class="linkbtn">Sign in</button>
               <span class="sep" aria-hidden="true">/</span>
               <button id="btn-signup" class="linkbtn">Create account</button>
@@ -110,9 +110,9 @@
       </div>
 
       <footer class="colophon">
-        Guardian Chess was invented by <strong>Alex Hooper</strong> &mdash; the
-        ten-column board and the Guardian are his idea.
         <a href="https://willhoop.github.io" target="_blank" rel="noopener">Built by Will Hooper</a>.
+        Guardian Chess was invented by Alex Hooper &mdash; the ten-column board
+        and the Guardian are his idea.
       </footer>
 
     </div>
@@ -274,89 +274,115 @@
 </div>
 
 <template id="rules-template">
-  <h3>Guardian Chess</h3>
-  <p>Standard chess on a wider board. Everything you already know still
-     applies — castling, en passant, promotion, the fifty-move rule. Two things
-     are new.</p>
+  <h3>How the Guardian moves</h3>
 
-  <h4>The board is 10 files by 8 ranks</h4>
-  <p>Files run <strong>a</strong> through <strong>j</strong>. Each side has ten
-     pawns and the back rank reads:</p>
-  <p class="mono">r n b <em>g</em> k q <em>g</em> b n r</p>
-  <p>A Guardian stands on either side of the king-and-queen pair, on
-     <strong>d</strong> and <strong>g</strong>.</p>
+  <p class="lede">It moves <b>exactly two squares</b> &mdash; straight up, down,
+     left or right. Never one square. Never three. Never diagonally.</p>
 
-  <h4>Why the king is on the left</h4>
-  <p>You may have noticed the king and queen are the other way round from
-     ordinary chess. That is deliberate, and it is the wider board's fault.</p>
-  <p>Every chess player knows the queen starts on her own colour — white queen
-     on a light square, black queen on a dark one. It is how you check the
-     board is set up correctly. On an eight-file board that agrees with putting
-     the queen to the king's left, because the left of the two centre squares
-     happens to be light.</p>
-  <p>Add two files and the parity flips. On ten files the centre squares are
-     <span class="mono">e</span> and <span class="mono">f</span>, and now
-     <span class="mono">e1</span> is the <em>dark</em> one. You can have the
-     queen on the king's left, or you can have her on her own colour. You
-     cannot have both.</p>
-  <p>Capablanca hit this same wall in his own 10&times;8 game a century ago and
-     kept the queen on the left, which left her on the wrong colour. Guardian
-     Chess makes the opposite choice: the king takes <span class="mono">e</span>
-     and the queen takes <span class="mono">f</span>, so
-     <strong>each queen still begins on her own colour</strong>. Kings still
-     face kings and queens still face queens.</p>
-  <p class="rules-note">Because the king stands on <span class="mono">e</span>,
-     his flank is the <span class="mono">a</span> side — so the
-     <strong>kingside runs left</strong> here, and the queenside right. Castling
-     kingside is still the short one, exactly as you are used to.</p>
+  <p class="lede">It <b>leaps</b>, like a knight. Whatever stands between it and
+     its destination is simply ignored, and is not captured. It takes only what
+     sits on the square it lands on.</p>
 
-  <h4>The Guardian</h4>
-  <p>It moves <strong>exactly two squares</strong>, straight up, down, left or
-     right. Never one square. Never three. Never diagonally.</p>
-  <p>It <strong>leaps</strong>, like a knight — whatever stands between it and
-     its destination is simply ignored, and is not captured. It captures only
-     what sits on the square it lands on.</p>
   <div class="rules-diagram" id="guardian-diagram"></div>
   <p class="rules-note">A Guardian on <span class="mono">e4</span> may go to
      <span class="mono">c4</span>, <span class="mono">g4</span>,
-     <span class="mono">e2</span> or <span class="mono">e6</span> — and nothing
-     can block it.</p>
+     <span class="mono">e2</span> or <span class="mono">e6</span> &mdash; and
+     nothing can block it. The eight squares touching it are all out of reach.</p>
 
-  <h4>Worth knowing</h4>
+  <h4>What that does to the game</h4>
   <ul>
-    <li>Because it always moves two, a Guardian can never change whether it
-        stands on an odd or an even rank or file. Each Guardian is locked to a
-        quarter of the board — twenty squares of the eighty — for the whole
-        game. Your two Guardians cover different quarters, and neither can ever
-        touch an even rank.</li>
-    <li>A Guardian cannot be blocked, so a Guardian check must be answered by
-        moving the king or capturing the Guardian. Interposing does nothing.</li>
-    <li>A lone Guardian cannot force mate, so King + Guardian against King is
-        drawn for insufficient material.</li>
-    <li>A pawn may promote to a Guardian.</li>
+    <li><b>It never changes parity.</b> Because it always moves two, a Guardian
+        can never switch between odd and even ranks or files. One that starts on
+        <span class="mono">d1</span> can only ever reach 20 of the 80 squares,
+        and can never stand on an even rank &mdash; not once, all game. Your two
+        Guardians travel different quarters and can never meet.</li>
+    <li><b>It cannot defend your pawns at home.</b> Rank 2 is even, so no
+        Guardian can ever protect a pawn on its starting square.</li>
+    <li><b>A Guardian check cannot be blocked.</b> Putting a piece in the way
+        does nothing. Move the king, or capture the Guardian.</li>
+    <li><b>It cannot mate alone.</b> King and Guardian against a lone king is
+        drawn for insufficient material, as with a lone bishop or knight.</li>
+    <li><b>It starts slowly.</b> In the opening position each Guardian has
+        exactly one legal move &mdash; straight forward two &mdash; because its
+        sideways leaps land on its own occupied back rank.</li>
+    <li><b>A pawn may promote to a Guardian.</b></li>
   </ul>
 
-  <h4>Castling on a wider board</h4>
-  <p>The board is two files wider, so the king travels further: it steps
-     <strong>three</strong> squares toward the rook, and the rook hops over to
-     the far side of it. (This is the same adjustment Capablanca made for his
-     own 10-file game.)</p>
-  <p>The king stands on <span class="mono">e</span>, so files
-     <span class="mono">a</span>–<span class="mono">e</span> are his side and
-     <span class="mono">f</span>–<span class="mono">j</span> are the queen's.
-     That makes the <span class="mono">a1</span> rook the king's rook.</p>
+  <h4>The board</h4>
+  <p>Ten columns instead of eight. They are lettered <span class="mono">a</span>
+     to <span class="mono">j</span>, each side has ten pawns, and the back rank
+     reads:</p>
+  <p class="mono">r n b <em>g</em> k q <em>g</em> b n r</p>
+  <p>A Guardian stands either side of the king-and-queen pair, on
+     <span class="mono">d</span> and <span class="mono">g</span>. Everything else
+     you already know still applies: en passant, promotion, stalemate, threefold
+     repetition, the fifty-move rule.</p>
+
+  <h4>Why the king and queen are swapped</h4>
+  <p>They are the other way round from ordinary chess, and that is deliberate.</p>
+  <p>Every chess player knows the queen starts on her own colour. On an
+     eight-column board that agrees with putting her to the king's left, because
+     the left of the two centre squares happens to be light. Add two columns and
+     the parity flips: on ten, the centre squares are <span class="mono">e</span>
+     and <span class="mono">f</span>, and now <span class="mono">e1</span> is the
+     <em>dark</em> one. You can have the queen on the king's left, or the queen
+     on her own colour. Not both.</p>
+  <p>Guardian Chess keeps her colour. The king takes
+     <span class="mono">e</span>, the queen takes <span class="mono">f</span>,
+     and <b>each queen still begins on her own colour</b>. Kings still face
+     kings and queens still face queens.</p>
+
+  <h4>Castling</h4>
+  <p>The king steps <b>three</b> squares toward the rook, not two, because the
+     board is wider. Since the king stands on <span class="mono">e</span>, his
+     flank is the <span class="mono">a</span> side &mdash; so the
+     <span class="mono">a1</span> rook is the king's rook and
+     <b>kingside runs left</b> here.</p>
   <ul>
-    <li><strong>Kingside (O-O)</strong> — king e1→b1, rook a1→c1. Three squares
-        to clear: <span class="mono">b1 c1 d1</span>.</li>
-    <li><strong>Queenside (O-O-O)</strong> — king e1→h1, rook j1→g1. Four
+    <li><b>Kingside (O-O)</b> &mdash; king e1&rarr;b1, rook a1&rarr;c1. Three
+        squares to clear: <span class="mono">b1 c1 d1</span>.</li>
+    <li><b>Queenside (O-O-O)</b> &mdash; king e1&rarr;h1, rook j1&rarr;g1. Four
         squares to clear: <span class="mono">f1 g1 h1 i1</span>.</li>
   </ul>
-  <p>So the short castle is still the kingside one. It just runs toward
-     <span class="mono">a</span>, because both extra files were added on the
-     queen's flank.</p>
-  <p>As always: every square between king and rook must be empty, the king may
-     not be in check, and may not pass through or land on an attacked square.
-     Note that a Guardian is very good at vetoing a castle from a distance.</p>
+  <p>Kingside is still the short castle, exactly as you are used to. As always,
+     every square between king and rook must be empty, the king may not be in
+     check, and may not pass through or land on an attacked square. A Guardian
+     is very good at vetoing a castle from a distance.</p>
+
+  <h4>Where the pieces come from</h4>
+  <p>Guardian Chess was invented by <span class="nb">Alex Hooper</span>. Both of
+     its ingredients turn out to have long histories of their own, which is
+     worth knowing and takes nothing away from the idea.</p>
+
+  <p><b>The Guardian is a Dabbaba.</b> A piece that leaps exactly two squares
+     orthogonally is one of the oldest pieces in chess outside the standard set.
+     The name is Arabic for a siege engine &mdash; the covered ram wheeled up to
+     a city wall &mdash; and in modern Arabic it means a tank. It appears in
+     medieval games such as <i>Tamerlane chess</i>, played on an 11&times;10
+     board in the fourteenth century. Its confinement to a quarter of the board
+     is a documented property of the piece, not a quirk of this game. Curiously,
+     a king and <em>four</em> Dabbabas, one per quarter, can force checkmate
+     against a bare king. You will never have four.</p>
+
+  <p><b>The board is Capablanca's.</b> Ten columns by eight rows, with two extra
+     pieces flanking the king and queen, is the shape of <i>Capablanca chess</i>,
+     devised in the 1920s by the Cuban world champion Jos&eacute; Ra&uacute;l
+     Capablanca. He thought top-level chess was drifting toward drawn games and
+     wanted a board deep enough that memorised openings would not carry you. His
+     two extra pieces were the Archbishop (bishop plus knight) and the Chancellor
+     (rook plus knight), and his back rank read
+     <span class="mono">r n a b q k b c n r</span>. The three-square castling
+     rule used here is his as well.</p>
+
+  <p><b>What appears to be new</b> is the combination: Dabbabas rather than
+     Capablanca's compound pieces, standing at <span class="mono">d</span> and
+     <span class="mono">g</span> on his board. That pairing does not seem to
+     exist as a named published variant.</p>
+
+  <p>The two histories collide in one place. Capablanca hit exactly the same
+     queen's-colour problem described above, and answered it the other way: he
+     kept the queen to the king's left and accepted her sitting on the wrong
+     shade. This game keeps her colour instead.</p>
 </template>
 
 <script type="module" src="./app.js"></script>

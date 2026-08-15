@@ -585,8 +585,8 @@ function playerBar(color) {
   if (p && typeof p.rating === 'number') {
     const rating = document.createElement('span');
     rating.className = 'prating';
-    rating.textContent = p.rating + (p.provisional ? '?' : '');
-    rating.title = p.provisional ? 'Provisional — fewer than 5 rated games' : 'Rating';
+    rating.textContent = String(p.rating);
+    rating.title = 'Rating';
     nodes.push(rating);
   }
 
@@ -1321,13 +1321,6 @@ function ratingCell(p) {
   const td = document.createElement('td');
   td.className = 'rating';
   td.textContent = String(p.rating);
-  if (p.provisional) {
-    const tag = document.createElement('span');
-    tag.className = 'prov';
-    tag.textContent = '?';
-    tag.title = 'Provisional — fewer than 5 rated games';
-    td.append(tag);
-  }
   return td;
 }
 
@@ -1378,11 +1371,12 @@ async function refreshMyRating() {
     el.myRating.textContent = '';
     const num = document.createElement('span');
     num.className = 'num';
-    num.textContent = player.rating + (player.provisional ? '?' : '');
+    num.textContent = String(player.rating);
     const meta = document.createElement('span');
     meta.className = 'meta';
-    meta.textContent = `${player.wins}W ${player.losses}L ${player.draws}D` +
-      (player.provisional ? ' · provisional' : '');
+    // The win/loss record already shows how new a rating is. A "provisional"
+    // badge only raises a question it does not answer.
+    meta.textContent = `${player.wins}W ${player.losses}L ${player.draws}D`;
     el.myRating.append(num, meta);
   } catch {
     el.myRating.hidden = true;

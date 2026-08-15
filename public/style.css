@@ -136,8 +136,8 @@ p { margin: 0 0 .7em; }
   flex-wrap: wrap;
 }
 
-.wordmark { display: flex; align-items: center; gap: 13px; min-width: 0; }
-.mark { width: 34px; height: 34px; flex: none; display: block; }
+.wordmark { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.mark { width: clamp(46px, 6vw, 62px); height: auto; aspect-ratio: 1; flex: none; display: block; }
 
 .masthead h1 {
   font-family: var(--serif);
@@ -252,7 +252,7 @@ p { margin: 0 0 .7em; }
   text-decoration-color: var(--gold-dim);
 }
 .colophon a:hover { color: var(--gold); text-decoration-color: var(--gold); }
-.colophon strong { color: var(--text); font-weight: 600; }
+/* No bold in the colophon: the only styled text is the one real link. */
 
 @media (max-width: 900px) {
   .actions { grid-template-columns: repeat(2, 1fr); }
@@ -517,6 +517,8 @@ p { margin: 0 0 .7em; }
 .rules em { color: var(--gold); font-style: normal; font-weight: 700; }
 .rules .mono { background: #14161e; padding: .1em .4em; border-radius: 4px; }
 .rules-note { color: var(--muted); font-size: .86rem; }
+.rules b { color: var(--text); font-weight: 650; }
+.rules .nb { white-space: nowrap; }
 
 /* Rows must be sized explicitly. Without grid-template-rows the middle row
    stretches to fit the guardian's SVG, the cells stop being square, and every
