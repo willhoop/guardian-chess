@@ -15,89 +15,106 @@
 
   <!-- ── Lobby ───────────────────────────────────────────────────────── -->
   <section id="lobby" class="screen">
-    <div class="lobby-inner">
-      <header class="brand">
-        <svg class="brand-mark" viewBox="0 0 45 45" aria-hidden="true">
-          <path d="M22.5 5.2 33.2 9.4c0 10.4-3.1 18.6-10.7 23.6C15 28 11.8 19.8 11.8 9.4z"
-                fill="var(--gold)"/>
-          <path d="M20.6 11.4h3.8v5.2h5.2v3.8h-5.2v5.2h-3.8v-5.2h-5.2v-3.8h5.2z"
-                fill="var(--bg-deep)"/>
-        </svg>
-        <div>
-          <h1>Guardian Chess</h1>
-          <p class="tagline">Ten files. Two Guardians. Every classic rule you already know.</p>
+    <div class="lobby">
+
+      <header class="masthead">
+        <div class="titleline">
+          <div class="wordmark">
+            <svg class="mark" viewBox="0 0 45 45" aria-hidden="true">
+              <path d="M22.5 5.2 33.2 9.4c0 10.4-3.1 18.6-10.7 23.6C15 28 11.8 19.8 11.8 9.4z"
+                    fill="var(--gold)"/>
+              <path d="M20.6 11.4h3.8v5.2h5.2v3.8h-5.2v5.2h-3.8v-5.2h-5.2v-3.8h5.2z"
+                    fill="var(--bg-deep)"/>
+            </svg>
+            <h1>Guardian Chess</h1>
+          </div>
+
+          <div class="account-area">
+            <div id="my-rating" class="my-rating" hidden></div>
+
+            <div id="guest-box" class="identity">
+              <input id="player-name" class="input namefield" placeholder="Your name"
+                     maxlength="24" autocomplete="off" aria-label="Your name">
+              <button id="btn-signin" class="linkbtn">Sign in</button>
+              <span class="sep" aria-hidden="true">/</span>
+              <button id="btn-signup" class="linkbtn">Create account</button>
+            </div>
+
+            <div id="account-box" class="identity" hidden>
+              <span class="who">Signed in as <strong id="account-name"></strong></span>
+              <button id="btn-signout" class="linkbtn">Sign out</button>
+            </div>
+          </div>
         </div>
+
+        <p class="tagline">Ten columns. Two Guardians. Every classic rule you already know.</p>
       </header>
 
-      <div class="cards">
-        <div class="card">
+      <div class="actions">
+
+        <section class="act">
           <h2>Start a game</h2>
-          <p class="card-sub">You get a code to send to your opponent.</p>
-          <fieldset class="colorpick">
+          <p>You get a code to send your opponent.</p>
+          <fieldset class="pick">
             <legend>Play as</legend>
             <label><input type="radio" name="hostcolor" value="w"><span>White</span></label>
             <label><input type="radio" name="hostcolor" value="b"><span>Black</span></label>
             <label><input type="radio" name="hostcolor" value="r" checked><span>Random</span></label>
           </fieldset>
           <button id="btn-create" class="btn btn-primary">Create game</button>
-        </div>
+        </section>
 
-        <div class="card">
+        <section class="act">
           <h2>Join a game</h2>
-          <p class="card-sub">Enter the code your opponent sent you.</p>
+          <p>Enter the five-character code you were sent.</p>
           <form id="join-form" autocomplete="off">
             <input id="join-code" class="input code-input" placeholder="ABC12"
                    maxlength="5" spellcheck="false" aria-label="Game code">
             <button type="submit" class="btn">Join</button>
           </form>
-        </div>
+        </section>
 
-        <div class="card">
+        <section class="act">
           <h2>Play the computer</h2>
-          <p class="card-sub">No opponent needed. Good for trying the Guardian out.</p>
-          <fieldset class="colorpick">
+          <p>No opponent needed. Three strengths.</p>
+          <fieldset class="pick">
             <legend>Strength</legend>
             <label><input type="radio" name="botlevel" value="easy"><span>Easy</span></label>
             <label><input type="radio" name="botlevel" value="normal" checked><span>Normal</span></label>
             <label><input type="radio" name="botlevel" value="strong"><span>Strong</span></label>
           </fieldset>
           <button id="btn-bot" class="btn">Play computer</button>
-        </div>
+        </section>
 
-        <div class="card">
+        <section class="act">
           <h2>Same screen</h2>
-          <p class="card-sub">Pass the device back and forth. No code needed.</p>
+          <p>Pass the device back and forth. No code needed, and the board turns
+             to face whoever is on move.</p>
           <button id="btn-local" class="btn">Play locally</button>
-        </div>
+        </section>
+
+        <section class="act">
+          <h2>Leaderboard</h2>
+          <p>Elo ratings and recent games. Every online game between two people
+             counts toward them.</p>
+          <button id="btn-leaderboard" class="btn">View leaderboard</button>
+        </section>
+
+        <section class="act">
+          <h2>How the Guardian moves</h2>
+          <p>Exactly two squares, straight only, leaping whatever stands in the
+             way.</p>
+          <button id="btn-rules-lobby" class="btn">Read the rules</button>
+        </section>
+
       </div>
 
-      <div class="lobby-foot">
-        <div class="identity">
-          <div id="guest-box">
-            <label class="namefield">
-              Your name
-              <input id="player-name" class="input" placeholder="Anonymous" maxlength="24"
-                     autocomplete="off">
-            </label>
-            <p class="guest-note">
-              Playing as a guest. <button id="btn-signin" class="linkbtn">Sign in</button>
-              or <button id="btn-signup" class="linkbtn">create an account</button>
-              to keep your rating across devices.
-            </p>
-          </div>
-          <div id="account-box" hidden>
-            <div class="signed-in">
-              <span class="who">Signed in as <strong id="account-name"></strong></span>
-              <button id="btn-signout" class="linkbtn">Sign out</button>
-            </div>
-          </div>
-        </div>
-        <div id="my-rating" class="my-rating" hidden></div>
-        <div class="lobby-links">
-          <button id="btn-leaderboard" class="linkbtn">Leaderboard →</button>
-          <button id="btn-rules-lobby" class="linkbtn">How the Guardian moves →</button>
-        </div>
-      </div>
+      <footer class="colophon">
+        Guardian Chess was invented by <strong>Alex Hooper</strong> &mdash; the
+        ten-column board and the Guardian are his idea.
+        <a href="https://willhoop.github.io" target="_blank" rel="noopener">Built by Will Hooper</a>.
+      </footer>
+
     </div>
   </section>
 

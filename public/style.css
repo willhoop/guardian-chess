@@ -20,6 +20,8 @@
   --sq-last: #c8b45a;
   --sq-check: #e0685f;
 
+  --rule: #2b2f42;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
   --radius: 12px;
   --shadow: 0 10px 30px rgba(0, 0, 0, .45);
   --font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -107,74 +109,160 @@ p { margin: 0 0 .7em; }
 #lobby {
   min-height: 100dvh;
   display: grid;
-  place-items: center;
-  padding: 5vh 20px;
+  grid-template-rows: 1fr auto;
+  justify-items: center;
+  padding: clamp(24px, 5vh, 60px) 20px 0;
 }
-.lobby-inner { width: min(980px, 100%); }
 
-.brand {
-  display: flex; align-items: center; gap: 18px;
-  margin-bottom: 34px;
-}
-.brand-mark { width: 62px; height: 62px; flex: none; filter: drop-shadow(0 3px 8px rgba(0,0,0,.5)); }
-.brand h1 { font-size: clamp(1.9rem, 4.6vw, 2.7rem); letter-spacing: -.02em; }
-.tagline { color: var(--muted); margin: 0; font-size: 1.02rem; }
-
-.cards {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(258px, 1fr));
-}
-.card {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 20px;
+.lobby {
+  width: min(1080px, 100%);
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  box-shadow: var(--shadow);
+  gap: clamp(26px, 4vh, 40px);
 }
-.card h2 { font-size: 1.12rem; }
-.card-sub { color: var(--muted); font-size: .9rem; margin: 0; flex: 1; }
-.card .btn { width: 100%; }
 
-.colorpick { border: 0; padding: 0; margin: 0; display: flex; gap: 6px; }
-.colorpick legend {
+/* Masthead: wordmark and account on one line, tagline beneath. */
+
+.masthead {
+  padding-bottom: clamp(22px, 3.5vh, 32px);
+  border-bottom: 1px solid var(--rule);
+}
+
+.titleline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.wordmark { display: flex; align-items: center; gap: 13px; min-width: 0; }
+.mark { width: 34px; height: 34px; flex: none; display: block; }
+
+.masthead h1 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(1.7rem, 3.6vw, 2.4rem);
+  letter-spacing: -.015em;
+  line-height: 1;
+  margin: 0;
+}
+
+.tagline {
+  color: var(--muted);
+  font-size: clamp(.92rem, 1.5vw, 1.02rem);
+  margin: 12px 0 0;
+  max-width: 54ch;
+}
+
+/* Account block, sitting on the same line as the wordmark. */
+
+.account-area { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.identity { display: flex; align-items: center; gap: 10px; }
+.identity .who { font-size: .88rem; color: var(--muted); }
+.identity strong { color: var(--text); font-weight: 600; }
+.identity .sep { color: var(--line); }
+.namefield { width: 150px; padding: .42em .7em; font-size: .88rem; }
+.linkbtn { font-size: .88rem; }
+
+/* Six tiles, three across, every one the same height. */
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.act {
+  background: var(--panel);
+  padding: 22px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  min-width: 0;
+}
+
+.act h2 {
+  font-family: var(--serif);
+  font-size: 1.14rem;
+  font-weight: 600;
+  letter-spacing: -.005em;
+  margin: 0;
+}
+
+/* Growing the copy pushes every button to the same baseline, so each row of
+   tiles reads level however much text it carries. */
+.act p {
+  color: var(--muted);
+  font-size: .88rem;
+  line-height: 1.5;
+  margin: 0;
+  flex: 1;
+}
+
+.act .btn { width: 100%; }
+.act form { display: flex; gap: 8px; }
+
+.pick { border: 0; padding: 0; margin: 0; display: flex; gap: 5px; }
+.pick legend {
   padding: 0; margin-bottom: 7px;
-  font-size: .76rem; letter-spacing: .09em; text-transform: uppercase; color: var(--muted);
+  font-size: .69rem; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted);
 }
-.colorpick label { flex: 1; }
-.colorpick input { position: absolute; opacity: 0; pointer-events: none; }
-.colorpick span {
+.pick label { flex: 1; }
+.pick input { position: absolute; opacity: 0; pointer-events: none; }
+.pick span {
   display: block; text-align: center;
-  padding: .45em .2em; font-size: .86rem;
-  border: 1px solid var(--line); border-radius: 8px;
-  background: #14161e; cursor: pointer;
+  padding: .42em .2em; font-size: .82rem;
+  border: 1px solid var(--line); border-radius: 3px;
+  background: var(--bg-deep); cursor: pointer;
+  transition: border-color .12s, color .12s;
 }
-.colorpick input:checked + span {
-  border-color: var(--gold); background: #33291455; color: var(--gold);
-}
-.colorpick input:focus-visible + span { outline: 2px solid var(--gold-dim); outline-offset: 1px; }
+.pick span:hover { border-color: #4a5070; }
+.pick input:checked + span { border-color: var(--gold); color: var(--gold); }
+.pick input:focus-visible + span { outline: 2px solid var(--gold-dim); outline-offset: 1px; }
 
-#join-form { display: flex; gap: 8px; }
 .code-input {
   text-transform: uppercase;
-  letter-spacing: .3em;
+  letter-spacing: .28em;
   font-family: var(--mono);
-  font-size: 1.06rem;
+  font-size: 1rem;
   text-align: center;
 }
 
-.lobby-foot {
-  margin-top: 26px;
-  display: flex; align-items: flex-end; justify-content: space-between;
-  gap: 20px; flex-wrap: wrap;
+/* Colophon */
+
+.colophon {
+  width: min(1080px, 100%);
+  margin-top: clamp(28px, 5vh, 48px);
+  padding: 18px 0 22px;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  font-size: .84rem;
+  line-height: 1.6;
 }
-.namefield {
-  display: flex; flex-direction: column; gap: 6px;
-  font-size: .76rem; letter-spacing: .09em; text-transform: uppercase; color: var(--muted);
-  max-width: 230px; width: 100%;
+.colophon a {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--gold-dim);
+}
+.colophon a:hover { color: var(--gold); text-decoration-color: var(--gold); }
+.colophon strong { color: var(--text); font-weight: 600; }
+
+@media (max-width: 900px) {
+  .actions { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .actions { grid-template-columns: minmax(0, 1fr); }
+  .titleline { align-items: flex-start; }
+  .account-area { width: 100%; }
+  .namefield { flex: 1; width: auto; }
 }
 
 /* ── Game layout ──────────────────────────────────────────────────── */
