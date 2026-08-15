@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Guardian Chess</title>
+<meta name="description" content="Guardian Chess — chess on a 10x8 board with the Guardian, a piece that leaps exactly two squares orthogonally. Play a friend online.">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 45 45'%3E%3Cpath d='M22.5 5.2 33.2 9.4c0 10.4-3.1 18.6-10.7 23.6C15 28 11.8 19.8 11.8 9.4z' fill='%23d8a24a'/%3E%3Cpath d='M20.6 11.4h3.8v5.2h5.2v3.8h-5.2v5.2h-3.8v-5.2h-5.2v-3.8h5.2z' fill='%23191b22'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ── Lobby ───────────────────────────────────────────────────────── -->
+  <section id="lobby" class="screen">
+    <div class="lobby-inner">
+      <header class="brand">
+        <svg class="brand-mark" viewBox="0 0 45 45" aria-hidden="true">
+          <path d="M22.5 5.2 33.2 9.4c0 10.4-3.1 18.6-10.7 23.6C15 28 11.8 19.8 11.8 9.4z"
+                fill="var(--gold)"/>
+          <path d="M20.6 11.4h3.8v5.2h5.2v3.8h-5.2v5.2h-3.8v-5.2h-5.2v-3.8h5.2z"
+                fill="var(--bg-deep)"/>
+        </svg>
+        <div>
+          <h1>Guardian Chess</h1>
+          <p class="tagline">Ten files. Two Guardians. Every classic rule you already know.</p>
+        </div>
+      </header>
+
+      <div class="cards">
+        <div class="card">
+          <h2>Start a game</h2>
+          <p class="card-sub">You get a code to send to your opponent.</p>
+          <fieldset class="colorpick">
+            <legend>Play as</legend>
+            <label><input type="radio" name="hostcolor" value="w"><span>White</span></label>
+            <label><input type="radio" name="hostcolor" value="b"><span>Black</span></label>
+            <label><input type="radio" name="hostcolor" value="r" checked><span>Random</span></label>
+          </fieldset>
+          <button id="btn-create" class="btn btn-primary">Create game</button>
+        </div>
+
+        <div class="card">
+          <h2>Join a game</h2>
+          <p class="card-sub">Enter the code your opponent sent you.</p>
+          <form id="join-form" autocomplete="off">
+            <input id="join-code" class="input code-input" placeholder="ABC12"
+                   maxlength="5" spellcheck="false" aria-label="Game code">
+            <button type="submit" class="btn">Join</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2>Play the computer</h2>
+          <p class="card-sub">No opponent needed. Good for trying the Guardian out.</p>
+          <fieldset class="colorpick">
+            <legend>Strength</legend>
+            <label><input type="radio" name="botlevel" value="easy"><span>Easy</span></label>
+            <label><input type="radio" name="botlevel" value="normal" checked><span>Normal</span></label>
+            <label><input type="radio" name="botlevel" value="strong"><span>Strong</span></label>
+          </fieldset>
+          <button id="btn-bot" class="btn">Play computer</button>
+        </div>
+
+        <div class="card">
+          <h2>Same screen</h2>
+          <p class="card-sub">Pass the device back and forth. No code needed.</p>
+          <button id="btn-local" class="btn">Play locally</button>
+        </div>
+      </div>
+
+      <div class="lobby-foot">
+        <div class="identity">
+          <div id="guest-box">
+            <label class="namefield">
+              Your name
+              <input id="player-name" class="input" placeholder="Anonymous" maxlength="24"
+                     autocomplete="off">
+            </label>
+            <p class="guest-note">
+              Playing as a guest. <button id="btn-signin" class="linkbtn">Sign in</button>
+              or <button id="btn-signup" class="linkbtn">create an account</button>
+              to keep your rating across devices.
+            </p>
+          </div>
+          <div id="account-box" hidden>
+            <div class="signed-in">
+              <span class="who">Signed in as <strong id="account-name"></strong></span>
+              <button id="btn-signout" class="linkbtn">Sign out</button>
+            </div>
+          </div>
+        </div>
+        <div id="my-rating" class="my-rating" hidden></div>
+        <div class="lobby-links">
+          <button id="btn-leaderboard" class="linkbtn">Leaderboard →</button>
+          <button id="btn-rules-lobby" class="linkbtn">How the Guardian moves →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Game ────────────────────────────────────────────────────────── -->
+  <section id="game" class="screen" hidden>
+    <div class="game-grid">
+
+      <div class="board-column">
+        <div id="opp-bar" class="playerbar"></div>
+
+        <div class="board-frame">
+          <div class="ranks" id="ranks"></div>
+          <div class="board-stack">
+            <div id="board" class="board" role="grid" aria-label="Guardian Chess board"></div>
+            <div id="board-overlay" class="board-overlay" hidden>
+              <div class="overlay-card">
+                <p id="overlay-title" class="overlay-title"></p>
+                <p id="overlay-sub" class="overlay-sub"></p>
+                <div id="overlay-actions" class="overlay-actions"></div>
+              </div>
+            </div>
+          </div>
+          <div class="files" id="files"></div>
+        </div>
+
+        <div id="me-bar" class="playerbar"></div>
+      </div>
+
+      <aside class="side">
+        <div class="side-head">
+          <div class="side-head-text">
+            <div id="room-line" class="room-line"></div>
+            <div id="status-line" class="status-line"></div>
+          </div>
+          <button id="btn-labels" class="iconbtn" title="Show piece letters"
+                  aria-label="Show piece letters" aria-pressed="false">Aa</button>
+          <button id="btn-flip" class="iconbtn" title="Flip board" aria-label="Flip board">⇅</button>
+        </div>
+
+        <div id="share" class="share" hidden>
+          <p class="share-label">Send this to your opponent</p>
+          <div class="share-row">
+            <input id="share-link" class="input" readonly>
+            <button id="btn-copy" class="btn btn-small">Copy</button>
+          </div>
+          <p class="share-code">Code: <strong id="share-code"></strong></p>
+        </div>
+
+        <div class="tabs" role="tablist">
+          <button class="tab is-active" data-tab="moves" role="tab">Moves</button>
+          <button class="tab" data-tab="score" role="tab">Score</button>
+          <button class="tab" data-tab="chat" role="tab">Chat</button>
+          <button class="tab" data-tab="rules" role="tab">Rules</button>
+        </div>
+
+        <div class="tabpanels">
+          <div class="tabpanel is-active" data-panel="moves">
+            <ol id="movelist" class="movelist"></ol>
+          </div>
+
+          <div class="tabpanel" data-panel="score">
+            <div id="scoreboard" class="scoreboard"></div>
+          </div>
+
+          <div class="tabpanel" data-panel="chat">
+            <div id="chatlog" class="chatlog"></div>
+            <form id="chat-form" autocomplete="off">
+              <input id="chat-input" class="input" placeholder="Say something…" maxlength="500">
+              <button type="submit" class="btn btn-small">Send</button>
+            </form>
+          </div>
+
+          <div class="tabpanel" data-panel="rules">
+            <div class="rules"></div>
+          </div>
+        </div>
+
+        <div id="notice" class="notice" hidden></div>
+
+        <div class="controls">
+          <button id="btn-draw" class="btn btn-small">Offer draw</button>
+          <button id="btn-resign" class="btn btn-small btn-danger">Resign</button>
+          <button id="btn-leave" class="btn btn-small btn-ghost">Leave</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ── Promotion chooser ───────────────────────────────────────────── -->
+  <div id="promo" class="modal" hidden>
+    <div class="modal-card">
+      <h3>Promote to</h3>
+      <div id="promo-options" class="promo-options"></div>
+      <button id="promo-cancel" class="linkbtn">Cancel</button>
+    </div>
+  </div>
+
+  <!-- ── Sign in / create account ────────────────────────────────────── -->
+  <div id="auth-modal" class="modal" hidden>
+    <div class="modal-card">
+      <button id="auth-close" class="modal-close" aria-label="Close">×</button>
+      <div class="tabs" role="tablist">
+        <button class="authtab is-active" data-authtab="signin" role="tab">Sign in</button>
+        <button class="authtab" data-authtab="signup" role="tab">Create account</button>
+      </div>
+      <form id="auth-form" autocomplete="on">
+        <label class="field">
+          <span>Username</span>
+          <input id="auth-username" class="input" maxlength="20" spellcheck="false"
+                 autocomplete="username" required>
+        </label>
+        <label class="field">
+          <span>Password</span>
+          <input id="auth-password" class="input" type="password" maxlength="200"
+                 autocomplete="current-password" required>
+        </label>
+        <p id="auth-hint" class="auth-hint"></p>
+        <p id="auth-error" class="auth-error" hidden></p>
+        <button id="auth-submit" type="submit" class="btn btn-primary">Sign in</button>
+      </form>
+      <p class="auth-foot">
+        No email, no verification. Just a name and a password so your rating
+        follows you between devices.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Leaderboard ─────────────────────────────────────────────────── -->
+  <div id="board-modal" class="modal" hidden>
+    <div class="modal-card modal-wide modal-tall">
+      <button id="board-close" class="modal-close" aria-label="Close">×</button>
+      <h3>Leaderboard</h3>
+      <p class="lb-note">
+        Rated games only — two people playing each other online. Games against
+        the computer and same-screen games are not counted.
+      </p>
+      <div class="tabs" role="tablist">
+        <button class="lbtab is-active" data-lbtab="ranks" role="tab">Rankings</button>
+        <button class="lbtab" data-lbtab="recent" role="tab">Recent games</button>
+      </div>
+      <div class="lb-body">
+        <div class="lbpanel is-active" data-lbpanel="ranks"><div id="lb-table"></div></div>
+        <div class="lbpanel" data-lbpanel="recent"><div id="lb-recent"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Rules ───────────────────────────────────────────────────────── -->
+  <div id="rules-modal" class="modal" hidden>
+    <div class="modal-card modal-wide">
+      <button id="rules-close" class="modal-close" aria-label="Close">×</button>
+      <div class="rules"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+</div>
+
+<template id="rules-template">
+  <h3>Guardian Chess</h3>
+  <p>Standard chess on a wider board. Everything you already know still
+     applies — castling, en passant, promotion, the fifty-move rule. Two things
+     are new.</p>
+
+  <h4>The board is 10 files by 8 ranks</h4>
+  <p>Files run <strong>a</strong> through <strong>j</strong>. Each side has ten
+     pawns and the back rank reads:</p>
+  <p class="mono">r n b <em>g</em> k q <em>g</em> b n r</p>
+  <p>A Guardian stands on either side of the king-and-queen pair, on
+     <strong>d</strong> and <strong>g</strong>.</p>
+
+  <h4>Why the king is on the left</h4>
+  <p>You may have noticed the king and queen are the other way round from
+     ordinary chess. That is deliberate, and it is the wider board's fault.</p>
+  <p>Every chess player knows the queen starts on her own colour — white queen
+     on a light square, black queen on a dark one. It is how you check the
+     board is set up correctly. On an eight-file board that agrees with putting
+     the queen to the king's left, because the left of the two centre squares
+     happens to be light.</p>
+  <p>Add two files and the parity flips. On ten files the centre squares are
+     <span class="mono">e</span> and <span class="mono">f</span>, and now
+     <span class="mono">e1</span> is the <em>dark</em> one. You can have the
+     queen on the king's left, or you can have her on her own colour. You
+     cannot have both.</p>
+  <p>Capablanca hit this same wall in his own 10&times;8 game a century ago and
+     kept the queen on the left, which left her on the wrong colour. Guardian
+     Chess makes the opposite choice: the king takes <span class="mono">e</span>
+     and the queen takes <span class="mono">f</span>, so
+     <strong>each queen still begins on her own colour</strong>. Kings still
+     face kings and queens still face queens.</p>
+  <p class="rules-note">One knock-on effect: with the king on
+     <span class="mono">e</span>, castling long clears three squares while
+     castling short clears four — so the queenside is now the quicker place to
+     tuck your king away, the reverse of the habit you brought with you.</p>
+
+  <h4>The Guardian</h4>
+  <p>It moves <strong>exactly two squares</strong>, straight up, down, left or
+     right. Never one square. Never three. Never diagonally.</p>
+  <p>It <strong>leaps</strong>, like a knight — whatever stands between it and
+     its destination is simply ignored, and is not captured. It captures only
+     what sits on the square it lands on.</p>
+  <div class="rules-diagram" id="guardian-diagram"></div>
+  <p class="rules-note">A Guardian on <span class="mono">e4</span> may go to
+     <span class="mono">c4</span>, <span class="mono">g4</span>,
+     <span class="mono">e2</span> or <span class="mono">e6</span> — and nothing
+     can block it.</p>
+
+  <h4>Worth knowing</h4>
+  <ul>
+    <li>Because it always moves two, a Guardian can never change whether it
+        stands on an odd or an even rank or file. Each Guardian is locked to a
+        quarter of the board — twenty squares of the eighty — for the whole
+        game. Your two Guardians cover different quarters, and neither can ever
+        touch an even rank.</li>
+    <li>A Guardian cannot be blocked, so a Guardian check must be answered by
+        moving the king or capturing the Guardian. Interposing does nothing.</li>
+    <li>A lone Guardian cannot force mate, so King + Guardian against King is
+        drawn for insufficient material.</li>
+    <li>A pawn may promote to a Guardian.</li>
+  </ul>
+
+  <h4>Castling on a wider board</h4>
+  <p>The board is two files wider, so the king travels further: it steps
+     <strong>three</strong> squares toward the rook, and the rook hops over to
+     the far side of it. (This is the same adjustment Capablanca made for his
+     own 10-file game.)</p>
+  <ul>
+    <li><strong>Kingside</strong> — king e1→h1, rook j1→g1. Four squares to
+        clear: <span class="mono">f1 g1 h1 i1</span>.</li>
+    <li><strong>Queenside</strong> — king e1→b1, rook a1→c1. Three squares to
+        clear: <span class="mono">b1 c1 d1</span>.</li>
+  </ul>
+  <p>As always: every square between king and rook must be empty, the king may
+     not be in check, and may not pass through or land on an attacked square.
+     Note that a Guardian is very good at vetoing a castle from a distance.</p>
+</template>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>

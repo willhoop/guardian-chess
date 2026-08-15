@@ -1,0 +1,34 @@
+# Deploy config for Render (https://render.com).
+#
+# Point Render at this repo (New → Blueprint) and it reads this file.
+# WebSockets work on every plan, including free.
+#
+# ─────────────────────────────────────────────────────────────────────────
+# IMPORTANT — accounts and ratings on the free plan
+#
+# The free plan has an ephemeral filesystem. data/leaderboard.json is wiped on
+# every redeploy and every restart, which means accounts, passwords and Elo
+# ratings are lost. Games themselves work fine.
+#
+# That is a reasonable way to start. When you want ratings to stick, switch the
+# three commented lines below: plan to `starter`, and add the disk plus
+# DATA_DIR so the data lives somewhere Render keeps.
+# ─────────────────────────────────────────────────────────────────────────
+services:
+  - type: web
+    name: guardian-chess
+    runtime: node
+    plan: free
+    # plan: starter            # ← required before a disk can be attached
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # - key: DATA_DIR        # ← where the server keeps player records
+      #   value: /var/data
+    # disk:                    # ← survives redeploys and restarts
+    #   name: guardian-data
+    #   mountPath: /var/data
+    #   sizeGB: 1
