@@ -430,23 +430,33 @@ p { margin: 0 0 .7em; }
 .rules .mono { background: #14161e; padding: .1em .4em; border-radius: 4px; }
 .rules-note { color: var(--muted); font-size: .86rem; }
 
+/* Rows must be sized explicitly. Without grid-template-rows the middle row
+   stretches to fit the guardian's SVG, the cells stop being square, and every
+   percentage-sized dot inside them turns into an ellipse. */
 .rules-diagram {
-  display: grid; grid-template-columns: repeat(5, 1fr);
-  width: min(220px, 100%); aspect-ratio: 5 / 5;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  width: min(220px, 100%);
+  aspect-ratio: 1;
   margin: 12px 0; border-radius: 6px; overflow: hidden;
 }
-.rules-diagram div { position: relative; display: grid; place-items: center; }
+.rules-diagram div {
+  position: relative; display: grid; place-items: center;
+  aspect-ratio: 1; min-width: 0; min-height: 0;
+}
 .rules-diagram .l { background: var(--sq-light); }
 .rules-diagram .d { background: var(--sq-dark); }
 .rules-diagram .t::after {
-  content: ""; position: absolute; width: 34%; height: 34%;
+  content: ""; position: absolute;
+  width: 34%; height: auto; aspect-ratio: 1;
   border-radius: 50%; background: #1c1f2b; opacity: .42;
 }
 .rules-diagram .x::after {
   content: "×"; position: absolute; color: #b03a30;
   font-size: 1.5rem; font-weight: 700; line-height: 1;
 }
-.rules-diagram svg { width: 88%; height: 88%; }
+.rules-diagram svg { width: 88%; height: auto; aspect-ratio: 1; }
 
 /* ── Accounts ─────────────────────────────────────────────────────── */
 

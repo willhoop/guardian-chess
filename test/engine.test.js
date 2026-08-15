@@ -264,43 +264,69 @@ test('castling moves the king three squares toward the rook', () => {
     { castling: { w: { k: true, q: true }, b: { k: false, q: false } } },
   );
   const dests = movesFrom(pos, 'e1');
-  assert.ok(dests.includes('h1'), 'kingside castling available');
-  assert.ok(dests.includes('b1'), 'queenside castling available');
+  // The king stands on e, so the a-side is the kingside and O-O runs left.
+  assert.ok(dests.includes('b1'), 'kingside castling available');
+  assert.ok(dests.includes('h1'), 'queenside castling available');
   assert.ok(!dests.includes('g1'), 'only the three-square castle exists');
   assert.ok(!dests.includes('c1'), 'only the three-square castle exists');
 
   const g = new Game({ pos, history: [], repetition: {}, result: null });
-  g.move('e1', 'h1');
-  assert.equal(g.pos.board[7][7].t, 'k', 'king lands on h1');
-  assert.equal(g.pos.board[7][6].t, 'r', 'rook lands on g1');
-  assert.equal(g.pos.board[7][9], null, 'j1 is vacated');
-  assert.equal(g.pos.board[7][4], null, 'e1 is vacated');
-  assert.equal(g.history[0].san, 'O-O');
-});
-
-test('queenside castling clears the three squares between king and rook', () => {
-  const blocked = setup(
-    { e1: 'wk', a1: 'wr', b1: 'wn', e8: 'bk' },
-    WHITE,
-    { castling: { w: { k: false, q: true }, b: { k: false, q: false } } },
-  );
-  assert.ok(!movesFrom(blocked, 'e1').includes('b1'), 'knight on b1 blocks');
-
-  const clear = setup(
-    { e1: 'wk', a1: 'wr', e8: 'bk' },
-    WHITE,
-    { castling: { w: { k: false, q: true }, b: { k: false, q: false } } },
-  );
-  const g = new Game({ pos: clear, history: [], repetition: {}, result: null });
   g.move('e1', 'b1');
   assert.equal(g.pos.board[7][1].t, 'k', 'king lands on b1');
   assert.equal(g.pos.board[7][2].t, 'r', 'rook lands on c1');
   assert.equal(g.pos.board[7][0], null, 'a1 is vacated');
+  assert.equal(g.pos.board[7][4], null, 'e1 is vacated');
+  assert.equal(g.history[0].san, 'O-O', 'castling with the king rook is short');
+});
+
+test('kingside is the short castle, as it is in ordinary chess', () => {
+  const pos = setup(
+    { e1: 'wk', j1: 'wr', a1: 'wr', e8: 'bk' },
+    WHITE,
+    { castling: { w: { k: true, q: true }, b: { k: false, q: false } } },
+  );
+  // Squares that must be empty between the king and each rook.
+  const between = (from, to) => {
+    let n = 0;
+    for (let c = Math.min(from, to) + 1; c < Math.max(from, to); c++) n++;
+    return n;
+  };
+  assert.equal(between(4, 0), 3, 'kingside: b1 c1 d1');
+  assert.equal(between(4, 9), 4, 'queenside: f1 g1 h1 i1');
+
+  // And the notation follows the rook, not the direction of travel.
+  const short = new Game({ pos, history: [], repetition: {}, result: null });
+  short.move('e1', 'b1');
+  assert.equal(short.history[0].san, 'O-O');
+
+  const long = new Game({ pos, history: [], repetition: {}, result: null });
+  long.move('e1', 'h1');
+  assert.equal(long.history[0].san, 'O-O-O');
+});
+
+test('queenside castling clears the four squares between king and rook', () => {
+  const blocked = setup(
+    { e1: 'wk', j1: 'wr', h1: 'wn', e8: 'bk' },
+    WHITE,
+    { castling: { w: { k: false, q: true }, b: { k: false, q: false } } },
+  );
+  assert.ok(!movesFrom(blocked, 'e1').includes('h1'), 'knight on h1 blocks');
+
+  const clear = setup(
+    { e1: 'wk', j1: 'wr', e8: 'bk' },
+    WHITE,
+    { castling: { w: { k: false, q: true }, b: { k: false, q: false } } },
+  );
+  const g = new Game({ pos: clear, history: [], repetition: {}, result: null });
+  g.move('e1', 'h1');
+  assert.equal(g.pos.board[7][7].t, 'k', 'king lands on h1');
+  assert.equal(g.pos.board[7][6].t, 'r', 'rook lands on g1');
+  assert.equal(g.pos.board[7][9], null, 'j1 is vacated');
   assert.equal(g.history[0].san, 'O-O-O');
 });
 
 test('cannot castle out of, through, or into check', () => {
-  const rights = { w: { k: true, q: false }, b: { k: false, q: false } };
+  const rights = { w: { k: false, q: true }, b: { k: false, q: false } };
   // The king crosses f1 and g1 on its way to h1, so all three are guarded.
   for (const [square, attacker] of [['f1', 'f8'], ['g1', 'g8'], ['h1', 'h8']]) {
     const pos = setup({ e1: 'wk', j1: 'wr', [attacker]: 'br', e8: 'bk' }, WHITE, { castling: rights });
@@ -316,7 +342,7 @@ test('a guardian can veto castling by covering a transit square', () => {
   const pos = setup(
     { e1: 'wk', j1: 'wr', g3: 'bg', e8: 'bk' },
     WHITE,
-    { castling: { w: { k: true, q: false }, b: { k: false, q: false } } },
+    { castling: { w: { k: false, q: true }, b: { k: false, q: false } } },
   );
   assert.ok(!movesFrom(pos, 'e1').includes('h1'));
 });
@@ -325,14 +351,14 @@ test('moving the king or rook forfeits castling rights', () => {
   const pos = setup(
     { e1: 'wk', j1: 'wr', e8: 'bk', a8: 'br' },
     WHITE,
-    { castling: { w: { k: true, q: false }, b: { k: false, q: false } } },
+    { castling: { w: { k: false, q: true }, b: { k: false, q: false } } },
   );
   const g = new Game({ pos, history: [], repetition: {}, result: null });
   g.move('j1', 'i1');
   g.move('e8', 'd8');
   g.move('i1', 'j1');
   g.move('d8', 'e8');
-  assert.equal(g.pos.castling.w.k, false);
+  assert.equal(g.pos.castling.w.q, false, 'the j-file rook is the queen rook');
   assert.ok(!movesFrom(g.pos, 'e1').includes('h1'));
 });
 

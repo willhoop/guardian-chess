@@ -93,11 +93,18 @@ export function opposite(color) {
  */
 const BACK_RANK = [ROOK, KNIGHT, BISHOP, GUARDIAN, KING, QUEEN, GUARDIAN, BISHOP, KNIGHT, ROOK];
 
-/** Home squares that matter for castling rights. The king now starts on e. */
+/**
+ * Home squares that matter for castling rights. The king starts on e.
+ *
+ * "Kingside" means the flank the king stands on, so on this board it is the
+ * a-side: files a to e hold the king, files f to j hold the queen. That makes
+ * the a-file rook the king's rook and the j-file rook the queen's rook — the
+ * mirror of ordinary chess, because here the king sits left of centre.
+ */
 const KING_HOME = { [WHITE]: { r: 7, c: 4 }, [BLACK]: { r: 0, c: 4 } };
 const ROOK_HOME = {
-  [WHITE]: { k: { r: 7, c: 9 }, q: { r: 7, c: 0 } },
-  [BLACK]: { k: { r: 0, c: 9 }, q: { r: 0, c: 0 } },
+  [WHITE]: { k: { r: 7, c: 0 }, q: { r: 7, c: 9 } },
+  [BLACK]: { k: { r: 0, c: 0 }, q: { r: 0, c: 9 } },
 };
 
 export function initialBoard() {
@@ -331,11 +338,12 @@ export function pseudoLegalMoves(pos, color = pos.turn) {
  * Capablanca used for his 10x8 game, and the reason the king ends up properly
  * tucked into the corner rather than stranded near the middle.
  *
- *   Kingside : K e1 -> h1, R j1 -> g1
- *   Queenside: K e1 -> b1, R a1 -> c1
+ *   Kingside  (O-O)  : K e1 -> b1, R a1 -> c1   — three squares to clear
+ *   Queenside (O-O-O): K e1 -> h1, R j1 -> g1   — four squares to clear
  *
- * Because the king sits on e rather than f, the long side is now the quicker
- * one to clear — three squares against four.
+ * The king stands on e, so the a-side is his side: castling kingside is the
+ * short one, just as it is in ordinary chess. It simply happens to run toward
+ * the a-file here, because the two extra files were added on the queen's side.
  */
 function addCastlingMoves(pos, color, moves) {
   const rights = pos.castling[color];
@@ -350,8 +358,8 @@ function addCastlingMoves(pos, color, moves) {
   // `between` must be empty; `pass` is every square the king touches after
   // leaving f, including where it lands, and none of them may be attacked.
   const sides = [
-    { side: 'k', rookCol: 9, kingTo: 7, rookTo: 6, between: [5, 6, 7, 8], pass: [5, 6, 7] },
-    { side: 'q', rookCol: 0, kingTo: 1, rookTo: 2, between: [1, 2, 3], pass: [3, 2, 1] },
+    { side: 'k', rookCol: 0, kingTo: 1, rookTo: 2, between: [1, 2, 3], pass: [3, 2, 1] },
+    { side: 'q', rookCol: 9, kingTo: 7, rookTo: 6, between: [5, 6, 7, 8], pass: [5, 6, 7] },
   ];
 
   for (const s of sides) {
