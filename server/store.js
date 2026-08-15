@@ -17,6 +17,7 @@ import { STARTING_RATING, PROVISIONAL_GAMES, applyResult } from '../shared/ratin
 import {
   hashPassword, verifyPassword, makeSessionToken, hashSessionToken, makePlayerId,
 } from './auth.js';
+import { makeBackend } from './storage.js';
 
 /** How many finished games to keep for the recent-games feed. */
 const HISTORY_LIMIT = 500;
@@ -32,8 +33,49 @@ export class PlayerStore {
     this.dir = options.dir || process.env.DATA_DIR || path.join(process.cwd(), 'data');
     this.file = path.join(this.dir, 'leaderboard.json');
     this.autosave = options.autosave !== false;
-    this.data = this.#load();
+    // A remote backend is only ever used by a real server. Tests pass
+    // autosave:false and therefore always stay on the local file.
+    this.remote = this.autosave
+      ? (options.backend !== undefined ? options.backend : makeBackend())
+      : null;
+    // With a remote store the local file is not just unnecessary, it is wrong:
+    // reading it would seed the server with whatever stale copy happens to be
+    // on that disk. Start empty and let init() fetch the real data.
+    this.data = this.remote ? structuredClone(EMPTY) : this.#load();
     this.saveTimer = null;
+    this.saving = false;
+    this.saveAgain = false;
+  }
+
+  /**
+   * Finish start-up. A remote backend cannot be read synchronously, so the
+   * server awaits this before it begins serving; otherwise the first request
+   * could be answered from an empty dataset and create duplicate accounts.
+   */
+  async init() {
+    if (!this.remote) return;
+    try {
+      const loaded = await this.remote.load();
+      if (loaded && loaded.players) {
+        this.data = {
+          version: 2,
+          players: loaded.players,
+          games: loaded.games || [],
+          accounts: loaded.accounts || {},
+          sessions: loaded.sessions || {},
+        };
+        const count = Object.keys(this.data.players).length;
+        console.log(`Loaded ${count} player record(s) from ${this.remote.name}.`);
+      } else {
+        console.log(`No existing data in ${this.remote.name}; starting fresh.`);
+      }
+    } catch (err) {
+      // Refuse to run rather than quietly overwrite good remote data with an
+      // empty file the first time anything saves.
+      throw new Error(
+        `Could not read player data from ${this.remote.name}: ${err.message}`,
+      );
+    }
   }
 
   #load() {
@@ -59,8 +101,13 @@ export class PlayerStore {
     }
   }
 
-  /** Write now, atomically, so a crash mid-write cannot truncate the file. */
+  /** Write now. Atomic on disk, so a crash mid-write cannot truncate the file. */
   saveNow() {
+    // This write covers everything a pending debounce was going to write, so
+    // cancel it. Otherwise every explicit save is followed by a duplicate,
+    // which is pure waste against a free tier's request quota.
+    clearTimeout(this.saveTimer);
+    if (this.remote) return this.#saveRemote();
     try {
       fs.mkdirSync(this.dir, { recursive: true });
       const tmp = `${this.file}.tmp`;
@@ -68,6 +115,28 @@ export class PlayerStore {
       fs.renameSync(tmp, this.file);
     } catch (err) {
       console.error('Could not save leaderboard:', err.message);
+    }
+    return undefined;
+  }
+
+  /**
+   * Push to the remote store, one write at a time. If changes arrive while a
+   * write is in flight, coalesce them into a single follow-up write rather
+   * than racing — the last writer would otherwise win with stale data.
+   */
+  async #saveRemote() {
+    if (this.saving) { this.saveAgain = true; return; }
+    this.saving = true;
+    try {
+      await this.remote.save(this.data);
+    } catch (err) {
+      console.error(`Could not save to ${this.remote.name}:`, err.message);
+    } finally {
+      this.saving = false;
+      if (this.saveAgain) {
+        this.saveAgain = false;
+        this.#saveRemote();
+      }
     }
   }
 

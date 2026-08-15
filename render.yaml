@@ -4,31 +4,28 @@
 # WebSockets work on every plan, including free.
 #
 # ─────────────────────────────────────────────────────────────────────────
-# IMPORTANT — accounts and ratings on the free plan
+# Keeping accounts and ratings on the free plan
 #
-# The free plan has an ephemeral filesystem. data/leaderboard.json is wiped on
-# every redeploy and every restart, which means accounts, passwords and Elo
-# ratings are lost. Games themselves work fine.
+# The free plan wipes the filesystem whenever the instance restarts, and a free
+# instance restarts every time it goes idle. To keep player records, create a
+# free Redis database at upstash.com and add these two variables in the Render
+# dashboard (Environment tab) after the first deploy:
 #
-# That is a reasonable way to start. When you want ratings to stick, switch the
-# three commented lines below: plan to `starter`, and add the disk plus
-# DATA_DIR so the data lives somewhere Render keeps.
+#   UPSTASH_REDIS_REST_URL
+#   UPSTASH_REDIS_REST_TOKEN
+#
+# They are secrets, so they are set in the dashboard rather than committed here.
+# With both present the server stores player data in Upstash; without them it
+# falls back to a local file. Games themselves work either way.
 # ─────────────────────────────────────────────────────────────────────────
 services:
   - type: web
     name: guardian-chess
     runtime: node
     plan: free
-    # plan: starter            # ← required before a disk can be attached
     buildCommand: npm ci --omit=dev
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_VERSION
         value: "22"
-      # - key: DATA_DIR        # ← where the server keeps player records
-      #   value: /var/data
-    # disk:                    # ← survives redeploys and restarts
-    #   name: guardian-data
-    #   mountPath: /var/data
-    #   sizeGB: 1

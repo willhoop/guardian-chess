@@ -33,6 +33,8 @@ app.use('/shared', express.static(path.join(ROOT, 'shared')));
 
 const store = new RoomStore();
 const players = new PlayerStore();
+// Player data may live in a remote store; load it before answering anything.
+await players.init();
 
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, rooms: store.size, uptime: process.uptime() });
@@ -427,6 +429,9 @@ sweeper.unref?.();
 
 server.listen(PORT, HOST, () => {
   console.log(`Guardian Chess running on http://localhost:${PORT}`);
+  console.log(players.remote
+    ? `Player data: ${players.remote.name} (survives restarts)`
+    : `Player data: ${players.file}`);
 });
 
 function shutdown() {

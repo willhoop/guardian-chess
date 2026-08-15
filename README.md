@@ -234,21 +234,55 @@ to steal. An account is different, so:
 Records live in `data/leaderboard.json`, written atomically after each change.
 Set `DATA_DIR` to move it.
 
-> **Hosting note:** many free tiers have an ephemeral filesystem, which means
-> the file is wiped on redeploy. To keep ratings you need a persistent disk
-> (a Render paid plan, a Fly volume, or a VPS), or point `DATA_DIR` at one.
+> **Hosting note:** on a free host the filesystem is wiped on every restart.
+> Set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` to keep records in
+> a free hosted store instead — see *Deploying for free*.
 
-### Deploying
+### Deploying for free
 
-Any host that runs Node and allows WebSockets works — Render, Fly.io, Railway,
-a VPS. There is no database and no build step; state lives in memory.
+Any host that runs Node and allows WebSockets works. The whole thing is two
+dependencies and no build step.
+
+The one wrinkle is storage. **Free tiers give you a filesystem that is wiped
+whenever the instance restarts**, and a free instance restarts every time it
+goes idle — so a local `data/leaderboard.json` means the leaderboard resets
+roughly daily. Free hosting therefore needs storage that lives somewhere else.
+
+**Free setup that keeps its data:**
+
+1. **Upstash** (upstash.com) — create a free Redis database. No card required.
+   Copy the two REST values it shows you.
+2. **Render** (render.com) — New → Blueprint → pick this repo. It reads
+   `render.yaml`.
+3. In the Render service, add two environment variables:
+
+   ```
+   UPSTASH_REDIS_REST_URL    = https://....upstash.io
+   UPSTASH_REDIS_REST_TOKEN  = ....
+   ```
+
+That is it. With both set the server keeps player records in Upstash instead of
+on disk, and they survive every restart. Without them it uses the local file
+exactly as before, which is what you want at home or on a VPS.
+
+The whole dataset is one JSON document, read once at boot and written on a
+debounce — a handful of requests an hour for a game among friends, far inside
+Upstash's free quota.
+
+Two things to expect on Render's free plan: the service sleeps after about 15
+minutes idle, so the first visitor waits roughly 30 seconds for it to wake, and
+because rooms live in memory, a restart ends any game actually in progress.
+Ratings and accounts are unaffected once Upstash is configured.
+
+**Running it at home instead** costs nothing and keeps the data on your own
+disk. Start the server and expose it with a tunnel:
 
 ```bash
-PORT=8080 npm start
+npx cloudflared tunnel --url http://localhost:3000
 ```
 
-Set `PORT` from the environment if your host requires it. Note that because
-games are held in memory, a restart ends every game in progress.
+That prints a public URL anyone can use, with no account needed. The catch is
+that your machine has to be on.
 
 ---
 
@@ -261,10 +295,11 @@ shared/rating.js    Elo maths
 shared/values.js    piece values, shared by the bot and the scoreboard
 server/rooms.js     room and seat bookkeeping
 server/store.js     persistent player records, accounts and game history
+server/storage.js   where that data lives: local file, or a free hosted store
 server/auth.js      password hashing and session tokens
 server/index.js     HTTP + WebSocket server
 public/             the client (no build step, no framework)
-test/               91 tests
+test/               100 tests
 ```
 
 `shared/engine.js` is loaded unmodified by **both** the browser and the server.
@@ -292,7 +327,7 @@ those persist to disk.
 npm test
 ```
 
-35 engine, 10 server, 11 bot, 21 rating and 14 account tests, including a fuzz run of
+36 engine, 10 server, 11 bot, 21 rating, 14 account and 8 storage tests, including a fuzz run of
 100 random games. The engine tests pin down the Guardian specifically: that it
 refuses to move one or three squares, that it leaps over both colours without
 capturing what it jumps, that it cannot be blocked when giving check, that it
