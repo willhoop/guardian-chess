@@ -31,7 +31,20 @@ moving as a spectator, and illegal Guardian moves are all covered by tests.
 
 **Rate limiting.** Password attempts are throttled per address. A wrong username
 and a wrong password return an identical message, so the endpoint cannot be used
-to discover who holds an account.
+to discover who holds an account. On Render the address is the one Render's
+proxy reports; before 1.0.1 it was the proxy's own address, so every visitor
+shared one counter.
+
+**Game codes.** A code is five characters from 32: 33,554,432 codes. Each
+address may look up a fixed number of codes that do not exist per window (over
+HTTP and WebSocket alike); after that, every lookup from it is refused until the
+window ends. Room creation is capped per address the same way.
+
+**WebSocket abuse.** Frames over a size cap are refused and the socket closed. Each
+connection has a message budget (a burst, then a steady rate); a socket that keeps
+sending past it is closed. A malformed frame or malformed JSON closes or refuses
+that one socket and never stops the server. All of these numbers live in
+`LIMITS` in `server/limits.js`.
 
 ## Known limits
 

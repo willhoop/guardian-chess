@@ -297,9 +297,11 @@ server/rooms.js     room and seat bookkeeping
 server/store.js     persistent player records, accounts and game history
 server/storage.js   where that data lives: local file, or a free hosted store
 server/auth.js      password hashing and session tokens
-server/index.js     HTTP + WebSocket server
+server/app.js       HTTP routes and the WebSocket game (the tests start this)
+server/limits.js    abuse limits: message size and rate, code guessing, logins
+server/index.js     start-up: load player data, listen, timers
 public/             the client (no build step, no framework)
-test/               100 tests
+tests/              the suite (`npm test` prints the count)
 ```
 
 `shared/engine.js` is loaded unmodified by **both** the browser and the server.

@@ -217,6 +217,9 @@ function onServerMessage(msg) {
     }
     case 'error': {
       toast(msg.message || 'That did not work.', true);
+      // A refused join or a rate limit says resync: false. Re-joining then
+      // would be refused again, and the two sides would loop.
+      if (msg.resync === false) return;
       // Our optimistic view may now be wrong; pull the truth back down.
       sendToServer({
         type: 'join', code: state.code,

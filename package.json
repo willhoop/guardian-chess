@@ -1,6 +1,6 @@
 {
   "name": "guardian-chess",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Guardian Chess — 10x8 chess variant with the Guardian piece, playable online",
   "type": "module",
   "main": "server/index.js",

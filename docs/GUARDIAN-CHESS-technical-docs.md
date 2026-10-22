@@ -9,7 +9,7 @@
 ```bash
 npm install
 npm start          # http://localhost:3000
-npm test           # 100 tests
+npm test           # the whole suite; it prints the count
 ```
 
 Node 20 or newer. Two runtime dependencies (`express`, `ws`). No build step, no

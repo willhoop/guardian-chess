@@ -5,7 +5,7 @@
 ```bash
 npm install
 npm start          # http://localhost:3000
-npm test           # 100 tests, about 40 seconds
+npm test           # the whole suite; it prints the count
 ```
 
 No build step and no framework. Two runtime dependencies, `express` and `ws`.

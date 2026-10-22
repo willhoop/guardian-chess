@@ -33,7 +33,7 @@ The server is authoritative. Every move is re-validated before it is accepted.
 ## Expectations
 
 - A rule change needs a test that fails without it.
-- Run `npm test` before pushing. All 100 must pass.
+- Run `npm test` before pushing. Every test must pass.
 - Several tests exist because an assumption that looked obviously right turned
   out to be wrong when it was actually run in a browser. Prefer running the
   thing to reasoning about it.
